@@ -1,4 +1,6 @@
+from rest_framework.views import APIView
 from rest_framework import viewsets, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import User, Order, CartItem
@@ -54,3 +56,31 @@ class CartItemViewSet(viewsets.ModelViewSet):
         if order_id:
             return CartItem.objects.filter(order__id=order_id, order__status='Pending')
         return super().get_queryset()
+
+class OrderListView(APIView):
+    """
+    get:
+    Retrieve a list of all orders.
+
+    post:
+    Create a new order.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Retrieve all orders for the authenticated user
+        orders = Order.objects.filter(user=request.user)
+        serializer = OrderSerializer(orders, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        # Create a new order for the authenticated user
+        data = request.data
+        data['user'] = request.user.id  # Attach the authenticated user to the order
+        serializer = OrderSerializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
