@@ -107,4 +107,27 @@ class UserLoginView(APIView):
             }, status=status.HTTP_200_OK)
         else:
             return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+class CheckoutView(APIView):
+    def post(self, request):
+        order_id = request.data.get("orderID")
+        
+        if not order_id:
+            return Response({"error": "Order ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            order = Order.objects.get(orderID=order_id)
+        except Order.DoesNotExist:
+            return Response({"error": "Order not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        if order.status == "PROCESSED":
+            return Response({"error": "Order is already processed"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        order.status = "PROCESSED"
+        order.save()
+
+        return Response(
+            {"message": f"Order {order_id} processed successfully", "status": order.status},
+            status=status.HTTP_200_OK
+        )
          

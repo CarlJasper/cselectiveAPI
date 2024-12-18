@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, OrderViewSet, CartItemViewSet, UserLoginView, OrderListView
+from .views import UserViewSet, OrderViewSet, CartItemViewSet, UserLoginView, OrderListView, CheckoutView
 
 
 
@@ -14,6 +14,7 @@ urlpatterns = [
     path('', include(router.urls)),  
     path('orders/', OrderListView.as_view(), name='order-list'),
     path('login/', UserLoginView.as_view(), name='user-login'),  
+     path('checkout/', CheckoutView.as_view(), name='checkout'),
       
 ]
 
